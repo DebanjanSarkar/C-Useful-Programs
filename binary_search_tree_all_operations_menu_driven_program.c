@@ -3,7 +3,71 @@
 #include<stdlib.h>
 #include<conio.h>
 
-struct BTNode
+//Queue structure and operations/functions definitions.
+struct LLNode                           //LLNode stands for Linked List Node
+{
+    struct BTNode *btnode;
+    struct LLNode *next;
+};
+
+struct llqueue                          //llqueue stands for Linked List Queue
+{
+    int size;
+    struct LLNode *front;
+};
+
+struct LLNode* createNode(struct BTNode *btn)
+{
+    struct LLNode *np;
+    np = (struct LLNode*)malloc(sizeof(struct LLNode));
+    np->next = NULL;
+    np->btnode = btn;
+    return(np);
+}
+
+struct llqueue* createQueue(void)
+{
+    struct llqueue *q;
+    q = (struct llqueue*)malloc(sizeof(struct llqueue));
+    q->size = 0;
+    q->front = NULL;
+    return(q);
+}
+
+void enQueue(struct llqueue *q, struct BTNode *btn)
+{
+    struct LLNode *np, *t = (q->front);
+    np = createNode( btn );
+    if( t == NULL )
+        q->front = np;
+    else
+    {
+        while( t->next != NULL )
+            t = t->next;
+        t->next = np;
+    }
+    q->size++;
+}
+
+struct BTNode* deQueue(struct llqueue *q)
+{
+    if( q->front != NULL )
+    {
+        struct BTNode *btn = (q->front)->btnode;
+        struct LLNode *temp;
+        temp = q->front;
+        q->front = (q->front)->next;
+        free(temp);
+        q->size--;
+        return( btn );
+    }
+}
+
+
+
+//Binary Tree structures and functions/operations definitions.
+
+struct BTNode                       //BTNode stands for Binary Tree Node.
 {
     int data;
     struct BTNode *left, *right;
@@ -137,6 +201,32 @@ int traverse_postorder(struct BTNode *root)
         return -1;
 }
 
+int traverse_levelorder(struct BTNode *root)
+{
+    struct llqueue *q;
+    struct BTNode *t, *temp;
+    if(root)
+    {
+        q = createQueue();
+        t = root;
+        while( t != NULL )
+        {
+            if( t->left )
+                enQueue( q , t->left );
+            printf("  %d  ",t->data);
+            if( t->right )
+                enQueue( q , t->right );
+            if( q->size == 0 )
+                t = NULL;
+            else
+                t = deQueue( q );
+        }
+        free(q);
+    }
+    else
+        return -1;
+}
+
 //Logic: Traverse through left subtree only(no right-node traversal), and in-course, the node with NULL *left pointer is the smallest.
 struct BTNode* getMIN( struct BTNode *root )
 {
@@ -260,14 +350,15 @@ int main(void)
         printf("1. Insert a new node (value) to the Binary Tree(using recursion).\n");
         printf("2. Insert a new node (value) to the Binary Tree(using loop).\n");
         printf("3. Check no. of nodes present in the Binary Tree Currently.\n");
-        printf("4. View the Binary Tree contents in Inorder way.\n");
-        printf("5. View the Binary Tree contents in Preorder way.\n");
-        printf("6. View the Binary Tree contents in Postorder way.\n");
-        printf("7. Get the SMALLEST value present in the binary tree currently.\n");
-        printf("8. Get the LARGEST value present in the binary tree currently.\n");
-        printf("9. Delete a value/node from the binary tree.\n");
-        printf("10. Clear the screen.\n");
-        printf("11. Exit.\n");
+        printf("4. View the Binary Tree contents in In-Order way.\n");
+        printf("5. View the Binary Tree contents in Pre-Order way.\n");
+        printf("6. View the Binary Tree contents in Post-Order way.\n");
+        printf("7. View the Binary Tree contents in Level-Order way.\n");
+        printf("8. Get the SMALLEST value present in the binary tree currently.\n");
+        printf("9. Get the LARGEST value present in the binary tree currently.\n");
+        printf("10. Delete a value/node from the binary tree.\n");
+        printf("11. Clear the screen.\n");
+        printf("12. Exit.\n");
         printf("\nEnter your choice:  ");
         scanf("%d",&choice);
         fflush(stdin);
@@ -310,7 +401,7 @@ int main(void)
                 break;
 
             case 4:
-                printf("\nInorder Traversal of the binary tree:\n");
+                printf("\nIn-Order Traversal of the binary tree:\n");
                 check = traverse_inorder( root );
                 if(check == -1)
                     printf("\nThe tree is empty...\n");
@@ -319,7 +410,7 @@ int main(void)
                 break;
 
             case 5:
-                printf("\nPreorder Traversal of the binary tree:\n");
+                printf("\nPre-Order Traversal of the binary tree:\n");
                 check = traverse_preorder( root );
                 if(check == -1)
                     printf("\nThe tree is empty...\n");
@@ -328,7 +419,7 @@ int main(void)
                 break;
 
             case 6:
-                printf("\nPostorder Traversal of the binary tree:\n");
+                printf("\nPost-Order Traversal of the binary tree:\n");
                 check = traverse_postorder( root );
                 if(check == -1)
                     printf("\nThe tree is empty...\n");
@@ -337,6 +428,15 @@ int main(void)
                 break;
             
             case 7:
+                printf("\nLevel-Order Traversal of the binary tree:\n");
+                check = traverse_levelorder( root );
+                if(check == -1)
+                    printf("\nThe tree is empty...\n");
+                printf("\nPress Any Key to continue...\n\n");
+                getch();
+                break;
+
+            case 8:
                 temp = getMIN( root );
                 if( temp )
                     printf("\nSMALLEST value in the binary tree currently is :  %d",temp->data);
@@ -346,7 +446,7 @@ int main(void)
                 getch();
                 break;
 
-            case 8:
+            case 9:
                 temp = getMAX( root );
                 if( temp )
                     printf("\nLARGEST value in the binary tree currently is :  %d",temp->data);
@@ -356,7 +456,7 @@ int main(void)
                 getch();
                 break;
             
-            case 9:
+            case 10:
                 printf("\nEnter the integer value that you want to delete :  ");
                 scanf("%d",&value);
                 if( !searchBTNode_recur( root, value ) )
@@ -371,12 +471,12 @@ int main(void)
                 getch();
                 break;
 
-            case 10:
+            case 11:
                 system("cls");
                 getch();
                 break;
 
-            case 11:
+            case 12:
                 printf("\nPress Any Key to exit...");
                 getch();
                 exit(0);
